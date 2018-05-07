@@ -1,0 +1,5 @@
+{
+    "restricted": false,
+    "scripts": ["main"],
+    "templates": ["main"]
+}
