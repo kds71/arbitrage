@@ -6,8 +6,6 @@ Arb.Websocket = {
  
     init: function() {
 
-        var prop = '';
-
         Arb.Websocket.listeners = {};
         Arb.Websocket.connected = false;
 
@@ -16,7 +14,7 @@ Arb.Websocket = {
         Arb.Websocket.ws.onopen = Arb.Websocket.openHandler;
         Arb.Websocket.ws.onclose = Arb.Websocket.closeHandler;
 
-        Arb.registerWebsocketListeners(App.Websocket);
+        Arb.registerWebsocketListeners(Arb.Websocket);
 
     },
 

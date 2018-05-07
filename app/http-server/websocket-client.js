@@ -10,6 +10,7 @@ module.exports = class WebsocketClient {
         this.socket = socket;
         this.currentPath = '';
         this.login = '';
+        this.authorized = false;
     
     }
 
@@ -23,14 +24,20 @@ module.exports = class WebsocketClient {
 
     }
 
-    send(success, data) {
+    send(data) {
 
-        data.status = !!success;
         if (!('timestamp' in data)) {
             data.timestamp = Date.now();
         }
 
         this.socket.send(JSON.stringify(data));
+
+    }
+
+    authorize(data) {
+
+        this.login = data.login;
+        this.authorized = true;
 
     }
 

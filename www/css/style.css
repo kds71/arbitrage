@@ -114,6 +114,24 @@ form header {
 
 form p.error {
     display: none;
+    background: #fff;
+    color: #800;
+    margin: 30px 50px;
+    padding: 0;
+    line-height: 20px;
+}
+
+form p.error:before {
+    content: '!';
+    color: #fff;
+    background: #800;
+    display: inline-block;
+    height: 30px;
+    width: 30px;
+    text-align: center;
+    line-height: 30px;
+    font-weight: 700;
+    margin-right: 20px;
 }
 
 form p {
@@ -156,3 +174,4 @@ form button[type="submit"] {
 form button[type="submit"]:hover {
     opacity: 0.7;
 }
+

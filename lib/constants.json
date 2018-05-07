@@ -36,6 +36,8 @@
     "LOG_MESSAGE_ACCESS_TO_INVALID_MODULE": "access-to-invalid-module",
     "LOG_MESSAGE_IO_ERROR": "io-error",
     "LOG_MESSAGE_PARSE_ERROR": "parse-error",
+    "LOG_MESSAGE_WEBSOCKET_AUTHORIZED_USER_LOGIN_ATTEMPT": "websocket-authorized-user-another-login-attempt",
+    "LOG_MESSAGE_WEBSOCKET_USER_AUTHORIZED": "websocket-user-authorized",
 
     "WS_ERROR_MALFORMED_JSON": "malformed-json",
     "WS_ERROR_HANDSHAKE_REPEAT": "handshake-repeat",
@@ -43,7 +45,8 @@
     "WS_INFO_HANDSHAKE": "handshake",
     "WS_REQUEST_LOGIN": "login",
     "WS_INFO_LOGIN_SUCCESS": "login-success",
-    "WS_INFO_LOGIN_FAILED": "login-failed",
+    "WS_ERROR_LOGIN_FAILED": "login-failed",
+    "WS_ERROR_LOGIN_REPEAT": "login-repeat",
 
     "INFO_HANDSHAKE": "handshake",
     "INFO_UPDATE_CONFIG": "update-config",
@@ -58,6 +61,9 @@
     "LOG_LEVEL_INFO": "info",
     "LOG_LEVEL_DEBUG": "debug",
     "LOG_LEVEL_VERBOSE": "verbose",
-    "LOG_LEVEL_SILLY": "silly"
+    "LOG_LEVEL_SILLY": "silly",
+
+    "HTTP_SERVER_CREDENTIALS": "arb-node-credentials"
+
 }
 

@@ -32,11 +32,25 @@ Arb.LoadedModules.login = {
 
     loginFailedListener: signed([
 
-        { message: C.WS_INFO_LOGIN_FAILED },
+        { message: C.WS_ERROR_LOGIN_FAILED },
+        function(response) {
+
+            var $form = Arb.LoadedModules.login.$container.find('form');
+            Arb.showFormErrors($form, response.fields);
+            $form.find('input').eq(0).focus();
+            Arb.release();
+
+        }
+
+    ]),
+
+    loginRepeatListener: signed([
+
+        { message: C.WS_ERROR_LOGIN_REPEAT },
         function(response) {
         }
 
-    ]);
+    ])
 
 };
 

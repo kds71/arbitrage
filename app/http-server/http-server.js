@@ -7,7 +7,8 @@ var express = require('express'),
 
 var C = require('lib/constants'),
     Application = require('lib/application'),
-    WebsocketClient = require('./websocket-client');
+    WebsocketClient = require('./websocket-client'),
+    WebsocketAPI = require('./websocket-api');
 
 module.exports = class HTTPServer extends Application {
 
@@ -58,6 +59,8 @@ module.exports = class HTTPServer extends Application {
 
         });
 
+        this.websocketAPI = new WebsocketAPI(this);
+
         this.expressApp.use('/module/:id/:name/meta', this.getModuleMeta.bind(this));
         this.expressApp.use('/module/:id/:name/template/:templateName', this.getModuleTemplate.bind(this));
         this.expressApp.use('/module/:id/:name/script/:scriptName', this.getModuleScript.bind(this));
@@ -82,7 +85,7 @@ module.exports = class HTTPServer extends Application {
         }
 
         if ('id' in data) {
-            client = this.getClient(data.id);
+            client = this.clients[data.id];
             if (!client) {
                 this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket.remoteAddr, name: '' }});
                 this.sendWebsocketError(socket, { message: C.WS_ERROR_UNKNOWN_CLIENT });
@@ -93,16 +96,42 @@ module.exports = class HTTPServer extends Application {
         if (data.message == C.WS_INFO_HANDSHAKE) {
 
             if (client) {
-                client.send(false, { message: C.WS_ERROR_HANDSHAKRE_REPEAT });
+                client.send({ message: C.WS_ERROR_HANDSHAKRE_REPEAT });
                 return;
             }
 
             client = new WebsocketClient(socket);
             this.clients[client.id] = client;
-            client.send(true, { message: C.WS_INFO_HANDSHAKE, id: client.id });
+            client.send({ message: C.WS_INFO_HANDSHAKE, id: client.id });
 
             this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_CLIENT_CONNECTED, client: client.getInfo() });
 
+            return;
+        }
+
+        if (!client) {
+            this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket.remoteAddr, name: '' }});
+            this.sendWebsocketError(socket, { message: C.WS_ERROR_UNKNOWN_CLIENT });
+            return;
+        }
+
+        if (data.message == C.WS_REQUEST_LOGIN) {
+
+            if (client.authorized) {
+                this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_AUTHORIZED_USER_LOGIN_ATTEMPT, client: client.getInfo() });
+                client.send({ message: C.WS_ERROR_LOGIN_REPEAT });
+                return;
+            }
+
+            if (this.checkLoginCredentials(data)) {
+                client.authorize(data);
+                this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_USER_AUTHORIZED, client: client.getInfo() });
+                client.send({ message: C.WS_INFO_LOGIN_SUCCESS });
+                return;
+            }
+
+            this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_USER_AUTHORIZATION_FAILED, client: client.getInfo() });
+            client.send({ message: C.WS_ERROR_LOGIN_FAILED, fields: ['login',  'password'] });
             return;
         }
 
@@ -124,6 +153,32 @@ module.exports = class HTTPServer extends Application {
             this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_CLIENT_DISCONNECTED, client: this.clients[fid].getInfo() });
             delete this.clients[fid];
         }
+
+    }
+
+    checkLoginCredentials(data) {
+
+        var key = C.HTTP_SERVER_CREDENTIALS.replace(/-/g, '_').toUpperCase(),
+            credentials = process.env[key],
+            reg = /^\(<(.*?)> <(.*?)>\) ?/,
+            m = null,
+            name = '',
+            pass = '';
+
+        while (m = credentials.match(reg)) {
+
+            pass = m.pop();
+            name = m.pop();
+
+            if (data.login == name && data.password == pass) {
+                return true;
+            }
+
+            credentials = credentials.replace(reg, '');
+
+        }
+
+        return false;
 
     }
 

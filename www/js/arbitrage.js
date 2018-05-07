@@ -32,10 +32,14 @@ var Arb = {
             }
         });
 
+        $(document).on('submit', 'form', Arb.formSubmitHandler);
+
     },
 
     registerWebsocketListeners: function(component) {
 
+        var prop = '';
+        
         for (prop in component) {
 
             if (typeof component[prop] == 'function'
@@ -43,10 +47,70 @@ var Arb = {
                     && component[prop].signature
                     && component[prop].signature.message) {
                 
-                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message] = Arb.Websocket.listeners[component[prop].signature.message] || [];
-                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message].push(component[prop]);
+                Arb.Websocket.listeners[component[prop].signature.message] = Arb.Websocket.listeners[component[prop].signature.message] || [];
+                Arb.Websocket.listeners[component[prop].signature.message].push(component[prop]);
             }
         }
+
+    },
+    
+    formSubmitHandler: function(e) {
+
+        var $target = $(e.currentTarget),
+            data = Arb.collectFormData($target);
+
+        if (!Arb.locked) {
+            $target.find('p.error').hide();
+            Arb.lock();
+            data.message = C[$target.attr('action')];
+            Arb.Websocket.send(data);
+        }
+
+        e.preventDefault();
+        return false;
+
+    },
+
+    collectFormData: function($target) {
+
+        var $fields = $target.find('input,select,textarea'),
+            data = {};
+
+        $fields.each(function() {
+
+            var $f = $(this),
+                fname = $f.attr('name');
+
+            if ($f.is('input[type="checkbox"]')) {
+                data[fname] = !!$f.prop('checked');
+            } else {
+                data[fname] = $f.val();
+            }
+
+        });
+        
+        return data;
+
+    },
+    
+    showFormErrors: function($target, fields) {
+
+        var $errors = $target.find('p.error');
+
+        $errors.each(function() {
+
+            var $e = $(this),
+                efields = $e.attr('data-field').split(' '),
+                i = 0;
+
+           for (i = 0; i < efields.length; i++) {
+               if (~fields.indexOf(efields[i])) {
+                   $e.show();
+                   break;
+               }
+           }
+
+        });
 
     },
 
