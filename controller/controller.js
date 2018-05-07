@@ -29,7 +29,18 @@ module.exports = class Controller {
             directory: this.directories.log
         });
 
-        this.appManager = new AppManager(config.applications, this.directories, this.logger);
+        this.appManager = new AppManager(config.applications, this.directories, this.logger, this.appManagerStartHandler.bind(this));
+
+    }
+
+    appManagerStartHandler(error) {
+
+        if (error) {
+            logger.fatal({ type: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error });
+            logger.stop(() => {
+                process.exit(0);
+            });
+        }
 
     }
 
