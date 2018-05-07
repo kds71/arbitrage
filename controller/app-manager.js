@@ -3,17 +3,19 @@
 var fs = require('fs'),
     path = require('path');
 
-var AppHandler = require('./app-handler');
+var AppHandler = require('./app-handler'),
+    C = require('../lib/constants');
 
 module.exports = class AppManager {
 
-    construct(controller, callback) {
+    constructor(controller, callback) {
 
         var key = '',
             entry = null,
             handler = null,
             toLoad = 0,
-            directories = this.controller.directories,
+            i = 0,
+            directories = controller.directories,
             
             loadConfig = function(handler) {
 
@@ -59,11 +61,11 @@ module.exports = class AppManager {
         this.apps = [];
         this.appIndex = {};
 
-        for (key in this.controller.config.apps) {
+        for (key in this.controller.config.applications) {
 
-            entry = this.controller.config.apps[key];
+            entry = this.controller.config.applications[key];
 
-            handler = new AppHandler(entry, directories.app, directories.root, logger);
+            handler = new AppHandler(entry, directories);
             handler.on(C.EVENT_APPLICATION_CLOSED, this.applicationClosedHandler.bind(this));
             handler.on(C.EVENT_APPLICATION_STARTED, this.applicationStartedHandler.bind(this));
             handler.on(C.EVENT_APPLICATION_ERROR, this.applicationErrorHandler.bind(this));
@@ -79,6 +81,17 @@ module.exports = class AppManager {
 
         for (i = 0; i < this.apps.length; i++) {
             loadConfig(this.apps[i]);
+        }
+
+    }
+
+    start() {
+
+        var i = 0;
+        for (i = 0; i < this.apps.length; i++) {
+            if (this.apps[i].autostart) {
+                this.apps[i].start();
+            }
         }
 
     }

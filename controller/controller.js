@@ -30,18 +30,30 @@ module.exports = class Controller {
             directory: this.directories.log
         });
 
+        this.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: '0', name: 'controller' });
+
         this.appManager = new AppManager(this, this.appManagerStartHandler.bind(this));
+
+    }
+
+    fatalError(message, error) {
+
+        this.logger.fatal({ type: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error });
+        this.logger.stop(() => {
+            console.log('\nCONTROLLER STOPPED AFTER FATAL ERROR\nCheck log file for details\n');
+            process.exit(0);
+        });
 
     }
 
     appManagerStartHandler(error) {
 
         if (error) {
-            logger.fatal({ type: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error });
-            logger.stop(() => {
-                process.exit(0);
-            });
+            this.fatalError(C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error);
+            return;
         }
+
+        this.appManager.start();
 
     }
 

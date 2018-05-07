@@ -22,7 +22,6 @@ module.exports = class AppHandler extends EventEmitter {
         this.process = null;
         this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
-        this.logger = logger;
 
     }
 
