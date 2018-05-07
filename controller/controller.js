@@ -35,7 +35,7 @@ module.exports = class Controller {
             directory: this.directories.log
         });
 
-        this.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: this.id, name: 'controller' });
+        this.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED });
 
         this.appManager = new AppManager(this, this.appManagerStartHandler.bind(this));
 
@@ -43,7 +43,7 @@ module.exports = class Controller {
 
     fatalError(message, error) {
 
-        this.logger.fatal({ message: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error, id: this.id, name: 'controller' });
+        this.logger.fatal({ message: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error });
         this.logger.stop(() => {
             console.log('\nCONTROLLER STOPPED AFTER FATAL ERROR\nCheck log file for details\n');
             process.exit(0);
@@ -69,7 +69,7 @@ module.exports = class Controller {
             this.stopping = true;
 
             console.log('\nSHUT DOWN REQUESTED BY USER\n');
-            this.logger.warn({ message: C.LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER, id: this.id, name: 'controller' });
+            this.logger.warn({ message: C.LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER });
 
             this.appManager.stop(function() {
                 this.logger.stop(() => {

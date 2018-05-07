@@ -44,7 +44,7 @@ module.exports = class AppHandler extends EventEmitter {
                 env: env
             };
 
-            this.process = cp = spawn('node', ['.'], options);
+            this.process = cp = spawn('node', ['.', this.id, this.name], options);
 
             this.process.on('close', this.closeHandler.bind(this));
             this.process.on('error', this.errorHandler.bind(this));

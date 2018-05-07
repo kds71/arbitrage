@@ -16,6 +16,7 @@ module.exports = class AppManager {
             toLoad = 0,
             i = 0,
             directories = controller.directories,
+            debug = controller.debug,
             
             loadConfig = function(handler) {
 
@@ -45,6 +46,16 @@ module.exports = class AppManager {
                         }
 
                         handler.config = jsonData;
+
+                        if (handler.config['has-logger']) {
+                            handler.config.logger = {
+                                level: debug ? C.LOG_LEVEL_VERBOSE : C.LOG_LEVEL_INFO,
+                                'app-name': handler.name,
+                                'rotate-hourly': true,
+                                directory: directories.log
+                            };
+                        }
+
                         toLoad--;
 
                         if (toLoad == 0) {
