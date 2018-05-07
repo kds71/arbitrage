@@ -1,0 +1,11 @@
+body, header, article, section, dl, dt, dd, ul, ol, li, p, div, h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f2f2f2;
+    color: #333;
+    font: normal 16px/21px sans-serif;
+}
+
