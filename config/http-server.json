@@ -1,5 +1,6 @@
 {
     "port": 17017,
+    "has-logger": true,
 
     "directories": {
         "www": "/Users/kds71/work/arbitrage/www"
