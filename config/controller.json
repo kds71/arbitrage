@@ -5,5 +5,17 @@
         "log": "log",
         "lib": "lib",
         "config": "config"
+    },
+
+    "applications": {
+
+        "http-server": {
+            "name": "HTTP Server",
+            "dir": "http-server",
+            "persistent": true,
+            "autostart": true
+        }
+
     }
+
 }
