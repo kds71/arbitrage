@@ -1,4 +1,6 @@
 {
+    "debug-mode": true,
+
     "directories": {
         "root": "/Users/kds71/work/arbitrage",
         "app": "app",
