@@ -25,7 +25,7 @@ module.exports = class HTTPServer extends Application {
         this.expressApp.use(express.static(this.config.directories.www, {
             index: 'index.htm',
             redirect: false
-        });
+        }));
         this.websocket = expressWebsocket(this.expressApp);
         this.expressApp.ws('/websocket', function(socket) {
             socket.on('message', this.websocketMessageHandler.bind(this, socket));
@@ -46,7 +46,7 @@ module.exports = class HTTPServer extends Application {
             data = JSON.parse(reqstr);
         } catch (parseError) {
 
-            this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_MALFORMED_JSON_FROM_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' });
+            this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_MALFORMED_JSON_FROM_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' }});
             this.sendWebsocketError(socket, { message: C.WS_ERROR_MALFORMED_JSON, error: parseError });
             return;
         }
@@ -54,7 +54,7 @@ module.exports = class HTTPServer extends Application {
         if ('id' in data) {
             client = this.getClient(data.id);
             if (!client) {
-                this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' });
+                this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' }});
                 this.sendWebsocketError(socket, { message: C.WS_ERROR_UNKNOWN_CLIENT });
                 return;
             }
@@ -71,7 +71,7 @@ module.exports = class HTTPServer extends Application {
             this.clients[client.id] = client;
             client.send(true, { message: C.WS_INFO_HANDSHAKE, id: client.id });
 
-            this.logger.info({ C.LOG_MESSAGE_WEBSOCKET_CLIENT_CONNECTED, client: client.getInfo() });
+            this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_CLIENT_CONNECTED, client: client.getInfo() });
 
             return;
         }
@@ -91,7 +91,7 @@ module.exports = class HTTPServer extends Application {
         }
         
         if (fid) {
-            this.logger.info({ C.LOG_MESSAGE_WEBSOCKET_CLIENT_DISCONNECTED, client: this.clients[fid].getInfo() });
+            this.logger.info({ message: C.LOG_MESSAGE_WEBSOCKET_CLIENT_DISCONNECTED, client: this.clients[fid].getInfo() });
             delete this.clients[fid];
         }
 
