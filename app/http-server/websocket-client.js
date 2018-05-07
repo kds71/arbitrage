@@ -23,5 +23,16 @@ module.exports = class WebsocketClient {
 
     }
 
+    send(success, data) {
+
+        data.status = !!success;
+        if (!('timestamp' in data)) {
+            data.timestamp = Date.now();
+        }
+
+        this.socket.send(JSON.stringify(data));
+
+    }
+
 };
 

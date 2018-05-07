@@ -97,5 +97,15 @@ module.exports = class HTTPServer extends Application {
 
     }
 
+    sendWebsocketError(socket, data) {
+
+        if (!('timestamp' in data)) {
+            data.timestamp = Date.now();
+        }
+
+        socket.send(JSON.stringify(data));
+
+    }
+
 }
 
