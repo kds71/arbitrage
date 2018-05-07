@@ -1,3 +1,7 @@
 {
-    "port": 17017
+    "port": 17017,
+
+    "directories": {
+        "www": "/Users/kds71/work/arbitrage/www"
+    }
 }
