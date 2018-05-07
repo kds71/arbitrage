@@ -1,7 +1,7 @@
 'use strict';
 
 var path = require('path'),
-    spawn = require('child_process').spawn(),
+    spawn = require('child_process').spawn,
     EventEmitter = require('events').EventEmitter;
 
 var uniqid = require('../lib/uniqid'),
@@ -44,6 +44,7 @@ module.exports = class AppHandler extends EventEmitter {
                 env: env
             };
 
+            console.log('spawn app', options);
             this.process = cp = spawn('node', ['.'], options);
 
             this.on('close', this.closeHandler.bind(this));
