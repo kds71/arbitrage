@@ -24,6 +24,15 @@
     "LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER": "application-controller-stopped-by-user",
     "LOG_MESSAGE_APPLICATION_STOP_REQUESTED_BY_CONTROLLER": "application-stop-requested-by-controller", 
     "LOG_MESSAGE_APPLICATION_STDERR": "application-stderr",
+    "LOG_MESSAGE_WEBSOCKET_MALFORMED_JSON_FROM_CLIENT": "websocket-malformed-json-from-client",
+    "LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT": "websocket-request-from-unknown-client",
+    "LOG_MESSAGE_WEBSOCKET_CLIENT_CONNECTED": "websocket-client-connected",
+    "LOG_MESSAGE_WEBSOCKET_CLIENT_DISCONNECTED": "websocket-client-disconnected",
+
+    "WS_ERROR_MALFORMED_JSON": "malformed-json",
+    "WS_ERROR_HANDSHAKE_REPEAT": "handshake-repeat",
+    "WS_ERROR_UNKNOWN_CLIENT": "unknown-client",
+    "WS_INFO_HANDSHAKE": "handshake",
 
     "INFO_HANDSHAKE": "handshake",
     "INFO_UPDATE_CONFIG": "update-config",
