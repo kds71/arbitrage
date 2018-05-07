@@ -16,17 +16,7 @@ Arb.Websocket = {
         Arb.Websocket.ws.onopen = Arb.Websocket.openHandler;
         Arb.Websocket.ws.onclose = Arb.Websocket.closeHandler;
 
-        for (prop in Arb.Websocket) {
-
-            if (typeof Arb.Websocket[prop] == 'function'
-                    && Arb.Websocket[prop]
-                    && Arb.Websocket[prop].signature
-                    && Arb.Websocket[prop].signature.message) {
-                
-                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message] = Arb.Websocket.listeners[Arb.Websocket[prop].signature.message] || [];
-                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message].push(Arb.Websocket[prop]);
-            }
-        }
+        Arb.registerWebsocketListeners(App.Websocket);
 
     },
 

@@ -34,6 +34,22 @@ var Arb = {
 
     },
 
+    registerWebsocketListeners: function(component) {
+
+        for (prop in component) {
+
+            if (typeof component[prop] == 'function'
+                    && component[prop]
+                    && component[prop].signature
+                    && component[prop].signature.message) {
+                
+                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message] = Arb.Websocket.listeners[component[prop].signature.message] || [];
+                Arb.Websocket.listeners[Arb.Websocket[prop].signature.message].push(component[prop]);
+            }
+        }
+
+    },
+
     websocketReady: function() {
 
         Arb.Module.init();
