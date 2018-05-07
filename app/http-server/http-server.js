@@ -1,7 +1,9 @@
 'use strict';
 
 var express = require('express'),
-    expressWebsocket = require('express-ws');
+    expressWebsocket = require('express-ws'),
+    fs = require('fs'),
+    path = require('path');
 
 var C = require('lib/constants'),
     Application = require('lib/application'),
@@ -16,12 +18,20 @@ module.exports = class HTTPServer extends Application {
         this.expressApp = null;
         this.websocket = null;
         this.clients = {};
+        this.directories = {};
+        this.cache = {
+            moduleMeta: {},
+            moduleTemplate: {},
+            moduleScript: {}
+        };
 
     }
 
     start() {
 
         this.expressApp = express();
+        this.directories.www = this.config.directories.www;
+        this.directories.module = path.join(this.directories.www, this.config.directories.module);
 
         this.expressApp.use(express.static(this.config.directories.www, {
             index: 'index.htm',
@@ -41,12 +51,16 @@ module.exports = class HTTPServer extends Application {
 
             res.set({
                 'Content-Length': size,
-                'Content-Type': C.MIME_JSON
+                'Content-Type': C.MIME_JSON + '; charset=utf-8'
             });
 
             res.end(JSON.stringify(C));
 
         });
+
+        this.expressApp.use('/module/:id/:name/meta', this.getModuleMeta.bind(this));
+        this.expressApp.use('/module/:id/:name/template/:templateName', this.getModuleTemplate.bind(this));
+        this.expressApp.use('/module/:id/:name/script/:scriptName', this.getModuleScript.bind(this));
 
         this.expressApp.listen(this.config.port);
 
@@ -62,7 +76,7 @@ module.exports = class HTTPServer extends Application {
             data = JSON.parse(reqstr);
         } catch (parseError) {
 
-            this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_MALFORMED_JSON_FROM_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' }});
+            this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_MALFORMED_JSON_FROM_CLIENT, client: { id: '', addr: socket.remoteAddr, name: '' }});
             this.sendWebsocketError(socket, { message: C.WS_ERROR_MALFORMED_JSON, error: parseError });
             return;
         }
@@ -70,7 +84,7 @@ module.exports = class HTTPServer extends Application {
         if ('id' in data) {
             client = this.getClient(data.id);
             if (!client) {
-                this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket._socket.remoteAddr, name: '' }});
+                this.logger.warn({ message: C.LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT, client: { id: '', addr: socket.remoteAddr, name: '' }});
                 this.sendWebsocketError(socket, { message: C.WS_ERROR_UNKNOWN_CLIENT });
                 return;
             }
@@ -120,6 +134,254 @@ module.exports = class HTTPServer extends Application {
         }
 
         socket.send(JSON.stringify(data));
+
+    }
+
+    getModuleMeta(request, response) {
+
+        var name = request.params.name,
+            id = request.params.id,
+            client = null,
+            filename = '';
+
+        if (!(id in this.clients)) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: { id: '', addr: request.ip, name: '' }});
+            response.status(404).end();
+            return;
+        }
+
+        client = this.clients[id];
+
+        filename = path.join(this.directories.module, name, 'meta.json');
+
+        if (name in this.cache.moduleMeta) {
+            this.returnModuleMeta(request, response, client, this.cache.moduleMeta[name]);
+            return;
+        }
+
+        fs.access(filename, fs.constants.R_OK, function(error) {
+        
+            if (error) {
+                this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name });
+                response.status(404).end();
+                return;
+            }
+
+            fs.readFile(filename, { encoding: 'utf8' }, function(error, content) {
+
+                var data = null;
+
+                if (error) {
+                    this.logger.error({ message: C.LOG_MESSAGE_IO_ERROR, filename: filename, error: error });
+                    response.status(500).end();
+                    return;
+                }
+                
+                try {
+                    data = JSON.parse(content);
+                } catch (parseError) {
+                    this.logger.error({ message: C.LOG_MESSAGE_PARSE_ERROR, filename: filename, error: parseError });
+                    response.status(500).end();
+                    return;
+                }
+
+                this.cache.moduleMeta[name] = data;
+                this.returnModuleMeta(request, response, client, this.cache.moduleMeta[name]);
+
+            }.bind(this));
+
+        }.bind(this));
+
+    }
+
+    returnModuleMeta(request, response, client, data) {
+
+        var content = '',
+            size = 0;
+
+        if (data.restricted && !client.authorized) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: client.getInfo() });
+            response.status(404).end();
+            return;
+        }
+
+        content = JSON.stringify(data);
+        size = Buffer.byteLength(content, 'utf8');
+
+        response.set({
+            'Content-Length': size,
+            'Content-Type': C.MIME_JSON + '; charset=utf-8'
+        });
+
+        response.end(content);
+
+    }
+
+    getModuleTemplate(request, response) {
+
+        var name = request.params.name,
+            id = request.params.id,
+            templateName = request.params.templateName,
+            meta = null,
+            client = null,
+            filename = '';
+
+        if (!(id in this.clients)) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: { id: '', addr: request.ip, name: '' }});
+            response.status(404).end();
+            return;
+        }
+
+        client = this.clients[id];
+
+        if (!(name in this.cache.moduleMeta)) {
+            this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, template: templateName });
+            response.status(404).end();
+            return;
+        }
+
+        meta = this.cache.moduleMeta[name];
+
+        if (!~(meta.templates.indexOf(templateName))) {
+            this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, template: templateName });
+            response.status(404).end();
+            return;
+        }
+
+        if ((name + '/' + templateName) in this.cache.moduleTemplate) {
+            this.returnModuleTemplate(request, response, client, meta, this.cache.moduleTemplate[name + '/' + templateName]);
+            return;
+        }
+
+        filename = path.join(this.directories.module, name, templateName + '.htm');
+
+        fs.access(filename, fs.constants.R_OK, function(error) {
+
+            if (error) {
+                this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, template: templateName });
+                response.status(404).end();
+                return;
+            }
+
+            fs.readFile(filename, { encoding: 'utf8' }, function(error, content) {
+
+                if (error) {
+                    this.logger.error({ message: C.LOG_MESSAGE_IO_ERROR, filename: filename, error: error });
+                    response.status(500).end();
+                    return;
+                }
+
+                this.cache.moduleTemplate[name + '/' + templateName] = content;
+                this.returnModuleTemplate(request, response, client, meta, content);
+
+            }.bind(this));
+
+        }.bind(this));
+
+    }
+
+    returnModuleTemplate(request, response, client, meta, content) {
+
+        var size = 0;
+
+        if (meta.restricted && !client.authorized) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: client.getInfo() });
+            response.status(404).end();
+            return;
+        }
+
+        size = Buffer.byteLength(content, 'utf8');
+
+        response.set({
+            'Content-Length': size,
+            'Content-Type': C.MIME_HTML + '; charset=utf-8'
+        });
+
+        response.end(content);
+
+    }
+
+    getModuleScript(request, response) {
+
+        var name = request.params.name,
+            id = request.params.id,
+            scriptName = request.params.scriptName,
+            meta = null,
+            client = null,
+            filename = '';
+
+        if (!(id in this.clients)) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: { id: '', addr: request.ip, name: '' }});
+            response.status(404).end();
+            return;
+        }
+
+        client = this.clients[id];
+
+        if (!(name in this.cache.moduleMeta)) {
+            this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, script: scriptName });
+            response.status(404).end();
+            return;
+        }
+
+        meta = this.cache.moduleMeta[name];
+
+        if (!~(meta.scripts.indexOf(scriptName))) {
+            this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, script: scriptName });
+            response.status(404).end();
+            return;
+        }
+
+        if ((name + '/' + scriptName) in this.cache.moduleScript) {
+            this.returnModuleScript(request, response, client, meta, this.cache.moduleScript[name + '/' + scriptName]);
+            return;
+        }
+
+        filename = path.join(this.directories.module, name, scriptName + '.js');
+
+        fs.access(filename, fs.constants.R_OK, function(error) {
+
+            if (error) {
+                this.logger.warn({ message: C.LOG_MESSAGE_ACCESS_TO_INVALID_MODULE, client: client.getInfo(), module: name, script: scriptName });
+                response.status(404).end();
+                return;
+            }
+
+            fs.readFile(filename, { encoding: 'utf8' }, function(error, content) {
+
+                if (error) {
+                    this.logger.error({ message: C.LOG_MESSAGE_IO_ERROR, filename: filename, error: error });
+                    response.status(500).end();
+                    return;
+                }
+
+                this.cache.moduleScript[name + '/' + scriptName] = content;
+                this.returnModuleScript(request, response, client, meta, content);
+
+            }.bind(this));
+
+        }.bind(this));
+
+    }
+
+    returnModuleScript(request, response, client, meta, content) {
+
+        var size = 0;
+
+        if (meta.restricted && !client.authorized) {
+            this.logger.warn({ message: C.LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT, client: client.getInfo() });
+            response.status(404).end();
+            return;
+        }
+
+        size = Buffer.byteLength(content, 'utf8');
+
+        response.set({
+            'Content-Length': size,
+            'Content-Type': C.MIME_JS + '; charset=utf-8'
+        });
+
+        response.end(content);
 
     }
 

@@ -2,11 +2,6 @@
 
 var Arb = Arb || {};
 
-var signed = function(l) {
-        l[1].signature = l[0];
-        return l[1];
-    };
-
 Arb.Websocket = {
  
     init: function() {
@@ -107,7 +102,7 @@ Arb.Websocket = {
 
         function(data) {
             Arb.id = data.id;
-            Arb.release();
+            Arb.websocketReady();
         }
 
     ])

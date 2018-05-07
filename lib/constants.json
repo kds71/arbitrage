@@ -18,6 +18,8 @@
     "EVENT_APPLICATION_MESSAGE": "event-application-message",
 
     "MIME_JSON": "application/json",
+    "MIME_JS": "application/javascript",
+    "MIME_HTML": "application/html",
 
     "LOG_MESSAGE_APPLICATION_STARTED": "application-started",
     "LOG_MESSAGE_APPLICATION_STOPPED": "application-stopped",
@@ -30,6 +32,10 @@
     "LOG_MESSAGE_WEBSOCKET_UNKNOWN_CLIENT": "websocket-request-from-unknown-client",
     "LOG_MESSAGE_WEBSOCKET_CLIENT_CONNECTED": "websocket-client-connected",
     "LOG_MESSAGE_WEBSOCKET_CLIENT_DISCONNECTED": "websocket-client-disconnected",
+    "LOG_MESSAGE_UNAUTHORIZED_MODULE_LOADING_ATTEMPT": "unauthorized-module-loading-attempt",
+    "LOG_MESSAGE_ACCESS_TO_INVALID_MODULE": "access-to-invalid-module",
+    "LOG_MESSAGE_IO_ERROR": "io-error",
+    "LOG_MESSAGE_PARSE_ERROR": "parse-error",
 
     "WS_ERROR_MALFORMED_JSON": "malformed-json",
     "WS_ERROR_HANDSHAKE_REPEAT": "handshake-repeat",

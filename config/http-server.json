@@ -3,6 +3,7 @@
     "has-logger": true,
 
     "directories": {
-        "www": "/Users/kds71/work/arbitrage/www"
+        "www": "/Users/kds71/work/arbitrage/www",
+        "module": "module"
     }
 }

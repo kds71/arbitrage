@@ -1,8 +1,15 @@
 'use strict';
 
+var signed = function(l) {
+        l[1].signature = l[0];
+        return l[1];
+    };
+
 var C = {};
 
 var Arb = {
+
+    LoadedModules: {},
 
     locked: false,
 
@@ -24,6 +31,12 @@ var Arb = {
                 });
             }
         });
+
+    },
+
+    websocketReady: function() {
+
+        Arb.Module.init();
 
     },
 
