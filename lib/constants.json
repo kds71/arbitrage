@@ -19,7 +19,8 @@
 
     "LOG_MESSAGE_APPLICATION_STARTUP_FAILED": "application-startup-failed",
 
-    "MESSAGE_HANDSHAKE": "message-handshake",
+    "MESSAGE_HANDSHAKE": "handshake",
+    "MESSAGE_UPDATE_CONFIG": "update-config",
 
     "LOG_LEVEL_FATAL": "fatal",
     "LOG_LEVEL_ERROR": "error",
