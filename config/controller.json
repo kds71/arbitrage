@@ -1,5 +1,6 @@
 {
     "debug-mode": true,
+    "application-restart-timeout": 10000,
 
     "directories": {
         "root": "/Users/kds71/work/arbitrage",
