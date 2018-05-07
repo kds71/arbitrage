@@ -12,6 +12,7 @@ module.exports = class Controller {
 
         this.config = config;
         this.debug = !!config['debug-mode'];
+        process.on('SIGINT', this.sigintHandler.bind(this));
 
         var dir = config.directories;
 
@@ -54,6 +55,20 @@ module.exports = class Controller {
         }
 
         this.appManager.start();
+
+    }
+
+    sigintHandler() {
+
+        console.log('\nSHUT DOWN REQUESTED BY USER\n');
+        this.logger.warn({ type: C.LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER });
+
+        this.appManager.stop(function() {
+            this.logger.stop(() => {
+                console.log('\nSHUT DOWN COMPLETED\n');
+                process.exit(0);
+            });
+        }.bind(this));
 
     }
 

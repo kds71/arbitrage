@@ -18,10 +18,13 @@
     "EVENT_APPLICATION_MESSAGE": "event-application-message",
 
     "LOG_MESSAGE_APPLICATION_STARTUP_FAILED": "application-startup-failed",
+    "LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER": "application-controller-stopped-by-user",
 
-    "MESSAGE_HANDSHAKE": "handshake",
-    "MESSAGE_UPDATE_CONFIG": "update-config",
-    "MESSAGE_APPLICATION_STARTED": "application-started",
+    "INFO_HANDSHAKE": "handshake",
+    "INFO_UPDATE_CONFIG": "update-config",
+
+    "REQUEST_APPLICATION_STARTED": "application-started",
+    "REQUEST_APPLICATION_STOP": "application-stop",
 
     "LOG_LEVEL_FATAL": "fatal",
     "LOG_LEVEL_ERROR": "error",

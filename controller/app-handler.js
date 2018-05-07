@@ -31,7 +31,7 @@ module.exports = class AppHandler extends EventEmitter {
             env = process.env,
             options = null;
 
-        if (this.state == C.APPLICATION_STATE_STOPPED) {
+        if (this.state == C.APPLICATION_STATE_CLOSED) {
 
             this.state = C.APPLICATION_STATE_STARTING;
 
@@ -43,22 +43,27 @@ module.exports = class AppHandler extends EventEmitter {
                 env: env
             };
 
-            console.log('spawn app', options);
             this.process = cp = spawn('node', ['.'], options);
 
             this.on('close', this.closeHandler.bind(this));
             this.on('error', this.errorHandler.bind(this));
             this.on('message', this.messageHandler.bind(this));
-            this.stderr.on('data', this.stderrHandler.bind(this));
-            this.stdout.on('data', this.stdoutHandler.bind(this));
+            this.process.stderr.on('data', this.stderrHandler.bind(this));
+            this.process.stdout.on('data', this.stdoutHandler.bind(this));
 
         }
 
     }
 
+    stop() {
+
+        this.process.send({ message: C.REQUEST_APPLICATION_STOP });
+
+    }
+
     closeHandler() {
 
-        this.state = C.APPLICATION_STATE_STOPPED;
+        this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
         this.emit(C.EVENT_APPLICATION_CLOSED, { app: this });
 
@@ -66,7 +71,7 @@ module.exports = class AppHandler extends EventEmitter {
 
     errorHandler(error) {
 
-        this.state = C.APPLICATION_STATE_STOPPED;
+        this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
         this.emit(C.EVENT_APPLICATION_ERROR, { app: this, error: error });
 
@@ -74,18 +79,18 @@ module.exports = class AppHandler extends EventEmitter {
 
     messageHandler(data) {
 
-        if (data.message == C.MESSAGE_HANDSHAKE) {
+        if (data.message == C.INFO_HANDSHAKE) {
 
             if (!this.connectionState) {
                 this.connected = true;
-                this.process.send({ message: C.MESSAGE_UPDATE_CONFIG, config: config });
+                this.process.send({ message: C.REQUEST_UPDATE_CONFIG, config: config });
             }
 
         } else if (this.connected) {
 
             if (this.connected) {
 
-                if (data.message == C.MESSAGE_APPLICATION_STARTED) {
+                if (data.message == C.INFO_APPLICATION_STARTED) {
                     this.state = C.APPLICATION_STATE_RUNNING;
                     this.emit(C.EVENT_APPLICATION_STARTED, { app: this });
                 } else {

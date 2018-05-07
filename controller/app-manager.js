@@ -60,6 +60,7 @@ module.exports = class AppManager {
         this.controller = controller;
         this.apps = [];
         this.appIndex = {};
+        this.stopping = false;
 
         for (key in this.controller.config.applications) {
 
@@ -96,27 +97,79 @@ module.exports = class AppManager {
 
     }
 
+    stop(callback) {
+
+        var app = null,
+            needWait = false;
+
+        this.stopping = true;
+        this.endCallback = callback;
+
+        for (i = 0; i < this.apps.length; i++) {
+
+            app = this.apps[i];
+
+            if (app.state != C.APPLICATION_STATE_CLOSED) {
+                needWait = true;
+            }
+            
+            if (app.state == C.APPLICATION_STATE_STARTED) {
+                app.stop();
+            }
+
+        }
+
+        if (!needWait) {
+            process.nextTick(callback);
+        }
+        
+    }
+
     applicationStartedHandler(app) {
     
         this.controller.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: app.id, name: app.name });
+
+        if (this.stopping) {
+            app.stop();
+        }
+
+    }
+
+    applicationShutdownHandler(app) {
+
+        var i = 0,
+            allClosed = true;
+
+        if (this.stopping) {
+
+            for (i = 0; i < this.apps.length; i++) {
+                if (app.state != C.APPLICATION_STATE_CLOSED) {
+                    allClosed = false;
+                    break;
+                }
+            }
+
+            if (allClosed && this.endCallback) {
+                this.endCallback();
+            }
+
+        } else if (app.persistent) {
+            setTimeout(app.start.bind(app), this.controller.config['application-restart-timeout']);
+        }
 
     }
 
     applicationClosedHandler(app) {
      
         this.controller.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STOPPED, id: app.id, name: app.name });
-        if (app.persistent) {
-            setTimeout(app.start.bind(app), this.controller.config['application-restart-timeout']);
-        }
+        this.applicationShutdownHandler(app);
 
     }
     
     applicationErrorHandler(app, error) {
 
         this.controller.logger.error({ message: C.LOG_MESSAGE_APPLICATION_ERROR, id: app.id, name: app.name, error: error });
-        if (app.persistent) {
-            setTimeout(app.start.bind(app), this.controller.config['application-restart-timeout']);
-        }
+        this.applicationShutdownHandler(app);
 
     }
 
