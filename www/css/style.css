@@ -9,6 +9,7 @@ body {
     font: 300 16px/21px Roboto,sans-serif;
 }
 
+#page-lock,
 #page-container {
     position: fixed;
     left: 0;
@@ -17,6 +18,17 @@ body {
     height: 100%;
     z-index: 1000;
     display: flex;
+}
+
+#page-lock {
+    z-index: 10000;
+    display: none;
+    background: rgba(0, 0, 0, 0.1);
+    cursor: wait;
+}
+
+body.locked #page-lock {
+    display: block;
 }
 
 #page-nav {
