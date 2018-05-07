@@ -7,12 +7,13 @@ var AppHandler = require('./app-handler');
 
 module.exports = class AppManager {
 
-    construct(config, directories, logger, callback) {
+    construct(controller, callback) {
 
         var key = '',
             entry = null,
             handler = null,
             toLoad = 0,
+            directories = this.controller.directories,
             
             loadConfig = function(handler) {
 
@@ -54,17 +55,78 @@ module.exports = class AppManager {
 
             };
 
+        this.controller = controller;
         this.apps = [];
-        this.logger = logger;
+        this.appIndex = {};
 
-        for (key in config) {
-            entry = config[key];
+        for (key in this.controller.config.apps) {
+
+            entry = this.controller.config.apps[key];
+
             handler = new AppHandler(entry, directories.app, directories.root, logger);
+            handler.on(C.EVENT_APPLICATION_CLOSED, this.applicationClosedHandler.bind(this));
+            handler.on(C.EVENT_APPLICATION_STARTED, this.applicationStartedHandler.bind(this));
+            handler.on(C.EVENT_APPLICATION_ERROR, this.applicationErrorHandler.bind(this));
+            handler.on(C.EVENT_APPLICATION_STDOUT, this.applicationSTDOUTHandler.bind(this));
+            handler.on(C.EVENT_APPLICATION_STDERR, this.applicationSTDERRHandler.bind(this));
+            handler.on(C.EVENT_APPLICATION_MESSAGE, this.applicationMessageHandler.bind(this));
+
             this.apps.push(handler);
+            this.appIndex[handler.id] = this.apps.length - 1;
             toLoad++;
-            loadConfig(handler);
+
         }
 
+        for (i = 0; i < this.apps.length; i++) {
+            loadConfig(this.apps[i]);
+        }
+
+    }
+
+    applicationStartedHandler(app) {
+    
+        this.controller.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: app.id, name: app.name });
+
+    }
+
+    applicationClosedHandler(app) {
+     
+        this.controller.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STOPPED, id: app.id, name: app.name });
+        if (app.persistent) {
+            setTimeout(app.start.bind(app), this.controller.config['application-restart-timeout']);
+        }
+
+    }
+    
+    applicationErrorHandler(app, error) {
+
+        this.controller.logger.error({ message: C.LOG_MESSAGE_APPLICATION_ERROR, id: app.id, name: app.name, error: error });
+        if (app.persistent) {
+            setTimeout(app.start.bind(app), this.controller.config['application-restart-timeout']);
+        }
+
+    }
+
+    applicationSTDOUTHandler(app, data) {
+
+        this.controller.logger.error({ message: C.LOG_MESSAGE_APPLICATION_STDERR, id: app.id, name: app.name, content: data });
+        if (this.controller.debug) {
+            console.log('\nAPPLICATION %s (%s) STDERR\n', app.name, app.id);
+            console.log(data);
+        }
+
+    }
+
+    applicationSTDERRHandler(app, data) {
+
+        if (this.controller.debug) {
+            console.log('\nAPPLICATION %s (%s) STDOUT\n', app.name, app.id);
+            console.log(data);
+        }
+
+    }
+
+    applicationMessageHandler(app, data) {
     }
 
 };

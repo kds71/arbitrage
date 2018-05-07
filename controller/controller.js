@@ -11,6 +11,7 @@ module.exports = class Controller {
     constructor(config) {
 
         this.config = config;
+        this.debug = !!config['debug-mode'];
 
         var dir = config.directories;
 
@@ -23,13 +24,13 @@ module.exports = class Controller {
         };
 
         this.logger = new Logger({
-            level: config['debug-mode'] ? C.LOG_LEVEL_VERBOSE : C.LOG_LEVEL_INFO,
+            level: this.debug ? C.LOG_LEVEL_VERBOSE : C.LOG_LEVEL_INFO,
             'app-name': 'controller',
             'rotate-hourly': true,
             directory: this.directories.log
         });
 
-        this.appManager = new AppManager(config.applications, this.directories, this.logger, this.appManagerStartHandler.bind(this));
+        this.appManager = new AppManager(this, this.appManagerStartHandler.bind(this));
 
     }
 

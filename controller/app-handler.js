@@ -1,24 +1,27 @@
 'use strict';
 
 var path = require('path'),
-    spawn = require('child_process').spawn();
+    spawn = require('child_process').spawn(),
+    EventEmitter = require('events').EventEmitter;
 
 var uniqid = require('../lib/uniqid'),
     C = require('../lib/constants');
 
-module.exports = class AppHandler {
+module.exports = class AppHandler extends EventEmitter {
 
-    constructor(config, basedir, rootdir, logger) {
+    constructor(descriptor, directories) {
 
-        this.name = config.name;
+        super();
+
+        this.name = descriptor.name;
         this.id = uniqid();
-        this.persistent = config.persistent;
-        this.autostart = config.autostart;
-        this.dir = path.join(basedir, config.dir);
-        this.root = rootdir;
+        this.persistent = descriptor.persistent;
+        this.autostart = descriptor.autostart;
+        this.dir = path.join(directories.app, descriptor.dir);
+        this.root = directories.root;
         this.process = null;
         this.state = C.APPLICATION_STATE_CLOSED;
-        this.connectionState = C.APPLICATION_CONNECTION_NONE;
+        this.connected = false;
         this.logger = logger;
 
     }
@@ -55,20 +58,56 @@ module.exports = class AppHandler {
 
     closeHandler() {
 
-        
+        this.state = C.APPLICATION_STATE_STOPPED;
+        this.connected = false;
+        this.emit(C.EVENT_APPLICATION_CLOSED, { app: this });
 
     }
 
-    errorHandler() {
+    errorHandler(error) {
+
+        this.state = C.APPLICATION_STATE_STOPPED;
+        this.connected = false;
+        this.emit(C.EVENT_APPLICATION_ERROR, { app: this, error: error });
+
     }
 
-    messageHandler() {
+    messageHandler(data) {
+
+        if (data.message == C.MESSAGE_HANDSHAKE) {
+
+            if (!this.connectionState) {
+                this.connected = true;
+                this.process.send({ message: C.MESSAGE_UPDATE_CONFIG, config: config });
+            }
+
+        } else if (this.connected) {
+
+            if (this.connected) {
+
+                if (data.message == C.MESSAGE_APPLICATION_STARTED) {
+                    this.state = C.APPLICATION_STATE_RUNNING;
+                    this.emit(C.EVENT_APPLICATION_STARTED, { app: this });
+                } else {
+                    this.emit(C.EVENT_APPLICATION_MESSAGE, { app: this, data: data });
+                }
+
+            }
+
+        }
+
     }
 
-    stderrHandler() {
+    stderrHandler(data) {
+
+        this.emit(C.EVENT_APPLICATION_STDERR, { app: this, data: data.toString('utf8') });
+
     }
 
-    stdoutHandler() {
+    stdoutHandler(data) {
+
+        this.emit(C.EVENT_APPLICATION_STDOUT, { app: this, data: data.toString('utf8') });
+
     }
 
 };

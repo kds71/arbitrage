@@ -21,6 +21,7 @@
 
     "MESSAGE_HANDSHAKE": "handshake",
     "MESSAGE_UPDATE_CONFIG": "update-config",
+    "MESSAGE_APPLICATION_STARTED": "application-started",
 
     "LOG_LEVEL_FATAL": "fatal",
     "LOG_LEVEL_ERROR": "error",
