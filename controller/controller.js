@@ -3,6 +3,7 @@
 var path = require('path');
 
 var C = require('../lib/constants'),
+    Logger = require('../lib/logger'),
     AppManager = require('./app-manager');
 
 module.exports = class Controller {
@@ -21,7 +22,14 @@ module.exports = class Controller {
             config: path.join(dir.root, dir.config)
         };
 
-        this.appManager = new AppManager(config.applications, this.directories);
+        this.logger = new Logger({
+            level: config['debug-mode'] ? C.LOG_LEVEL_VERBOSE : C.LOG_LEVEL_INFO,
+            'app-name': 'controller',
+            'rotate-hourly': true,
+            directory: this.directories.log
+        });
+
+        this.appManager = new AppManager(config.applications, this.directories, this.logger);
 
     }
 
