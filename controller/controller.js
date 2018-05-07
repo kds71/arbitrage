@@ -4,14 +4,18 @@ var path = require('path');
 
 var C = require('../lib/constants'),
     Logger = require('../lib/logger'),
+    uniqid = require('../lib/uniqid'),
     AppManager = require('./app-manager');
 
 module.exports = class Controller {
 
     constructor(config) {
 
+        this.id = uniqid();
         this.config = config;
         this.debug = !!config['debug-mode'];
+        this.stopping = false;
+
         process.on('SIGINT', this.sigintHandler.bind(this));
 
         var dir = config.directories;
@@ -31,7 +35,7 @@ module.exports = class Controller {
             directory: this.directories.log
         });
 
-        this.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: '0', name: 'controller' });
+        this.logger.info({ message: C.LOG_MESSAGE_APPLICATION_STARTED, id: this.id, name: 'controller' });
 
         this.appManager = new AppManager(this, this.appManagerStartHandler.bind(this));
 
@@ -39,7 +43,7 @@ module.exports = class Controller {
 
     fatalError(message, error) {
 
-        this.logger.fatal({ type: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error });
+        this.logger.fatal({ message: C.LOG_MESSAGE_APPLICATION_STARTUP_FAILED, error: error, id: this.id, name: 'controller' });
         this.logger.stop(() => {
             console.log('\nCONTROLLER STOPPED AFTER FATAL ERROR\nCheck log file for details\n');
             process.exit(0);
@@ -60,15 +64,21 @@ module.exports = class Controller {
 
     sigintHandler() {
 
-        console.log('\nSHUT DOWN REQUESTED BY USER\n');
-        this.logger.warn({ type: C.LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER });
+        if (!this.stopping) {
 
-        this.appManager.stop(function() {
-            this.logger.stop(() => {
-                console.log('\nSHUT DOWN COMPLETED\n');
-                process.exit(0);
-            });
-        }.bind(this));
+            this.stopping = true;
+
+            console.log('\nSHUT DOWN REQUESTED BY USER\n');
+            this.logger.warn({ message: C.LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER, id: this.id, name: 'controller' });
+
+            this.appManager.stop(function() {
+                this.logger.stop(() => {
+                    console.log('\nSHUT DOWN COMPLETED\n');
+                    process.exit(0);
+                });
+            }.bind(this));
+
+        }
 
     }
 

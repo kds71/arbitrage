@@ -22,6 +22,7 @@ module.exports = class AppHandler extends EventEmitter {
         this.process = null;
         this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
+        this.config = descriptor.config;
 
     }
 
@@ -45,9 +46,9 @@ module.exports = class AppHandler extends EventEmitter {
 
             this.process = cp = spawn('node', ['.'], options);
 
-            this.on('close', this.closeHandler.bind(this));
-            this.on('error', this.errorHandler.bind(this));
-            this.on('message', this.messageHandler.bind(this));
+            this.process.on('close', this.closeHandler.bind(this));
+            this.process.on('error', this.errorHandler.bind(this));
+            this.process.on('message', this.messageHandler.bind(this));
             this.process.stderr.on('data', this.stderrHandler.bind(this));
             this.process.stdout.on('data', this.stdoutHandler.bind(this));
 
@@ -65,7 +66,7 @@ module.exports = class AppHandler extends EventEmitter {
 
         this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
-        this.emit(C.EVENT_APPLICATION_CLOSED, { app: this });
+        this.emit(C.EVENT_APPLICATION_CLOSED, this);
 
     }
 
@@ -73,7 +74,7 @@ module.exports = class AppHandler extends EventEmitter {
 
         this.state = C.APPLICATION_STATE_CLOSED;
         this.connected = false;
-        this.emit(C.EVENT_APPLICATION_ERROR, { app: this, error: error });
+        this.emit(C.EVENT_APPLICATION_ERROR, this, error);
 
     }
 
@@ -81,9 +82,9 @@ module.exports = class AppHandler extends EventEmitter {
 
         if (data.message == C.INFO_HANDSHAKE) {
 
-            if (!this.connectionState) {
+            if (!this.connected) {
                 this.connected = true;
-                this.process.send({ message: C.REQUEST_UPDATE_CONFIG, config: config });
+                this.process.send({ message: C.REQUEST_UPDATE_CONFIG, config: this.config });
             }
 
         } else if (this.connected) {
@@ -92,9 +93,9 @@ module.exports = class AppHandler extends EventEmitter {
 
                 if (data.message == C.INFO_APPLICATION_STARTED) {
                     this.state = C.APPLICATION_STATE_RUNNING;
-                    this.emit(C.EVENT_APPLICATION_STARTED, { app: this });
+                    this.emit(C.EVENT_APPLICATION_STARTED, this);
                 } else {
-                    this.emit(C.EVENT_APPLICATION_MESSAGE, { app: this, data: data });
+                    this.emit(C.EVENT_APPLICATION_MESSAGE, this, data);
                 }
 
             }
@@ -105,13 +106,13 @@ module.exports = class AppHandler extends EventEmitter {
 
     stderrHandler(data) {
 
-        this.emit(C.EVENT_APPLICATION_STDERR, { app: this, data: data.toString('utf8') });
+        this.emit(C.EVENT_APPLICATION_STDERR, this, data.toString('utf8'));
 
     }
 
     stdoutHandler(data) {
 
-        this.emit(C.EVENT_APPLICATION_STDOUT, { app: this, data: data.toString('utf8') });
+        this.emit(C.EVENT_APPLICATION_STDOUT, this, data.toString('utf8'));
 
     }
 

@@ -100,7 +100,8 @@ module.exports = class AppManager {
     stop(callback) {
 
         var app = null,
-            needWait = false;
+            needWait = false,
+            i = 0;
 
         this.stopping = true;
         this.endCallback = callback;
@@ -113,7 +114,7 @@ module.exports = class AppManager {
                 needWait = true;
             }
             
-            if (app.state == C.APPLICATION_STATE_STARTED) {
+            if (app.state == C.APPLICATION_STATE_RUNNING) {
                 app.stop();
             }
 
@@ -173,7 +174,7 @@ module.exports = class AppManager {
 
     }
 
-    applicationSTDOUTHandler(app, data) {
+    applicationSTDERRHandler(app, data) {
 
         this.controller.logger.error({ message: C.LOG_MESSAGE_APPLICATION_STDERR, id: app.id, name: app.name, content: data });
         if (this.controller.debug) {
@@ -183,7 +184,7 @@ module.exports = class AppManager {
 
     }
 
-    applicationSTDERRHandler(app, data) {
+    applicationSTDOUTHandler(app, data) {
 
         if (this.controller.debug) {
             console.log('\nAPPLICATION %s (%s) STDOUT\n', app.name, app.id);
