@@ -6,6 +6,10 @@
     "APPLICATION_STATE_RUNNING": "application-state-running",
     "APPLICATION_STATE_CLOSING": "application-state-closing",
 
+    "APPLICATION_CONNECTION_NONE": "application-connection-none",
+    "APPLICATION_CONNECTION_HANDSHAKE": "application-connection-handshake",
+    "APPLICATION_CONNECTION_READY": "application-connection-ready",
+
     "LOG_LEVEL_FATAL": "fatal",
     "LOG_LEVEL_ERROR": "error",
     "LOG_LEVEL_WARN": "warn",
