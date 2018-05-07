@@ -1,3 +1,16 @@
 {
-    "DEFAULT_TIMEZONE": "Europe/Warsaw"
+    "DEFAULT_TIMEZONE": "Europe/Warsaw",
+
+    "APPLICATION_STATE_CLOSED": "application-state-closed",
+    "APPLICATION_STATE_STARTING": "application-state-starting",
+    "APPLICATION_STATE_RUNNING": "application-state-running",
+    "APPLICATION_STATE_CLOSING": "application-state-closing",
+
+    "LOG_LEVEL_FATAL": "fatal",
+    "LOG_LEVEL_ERROR": "error",
+    "LOG_LEVEL_WARN": "warn",
+    "LOG_LEVEL_INFO": "info",
+    "LOG_LEVEL_DEBUG": "debug",
+    "LOG_LEVEL_VERBOSE": "verbose",
+    "LOG_LEVEL_SILLY": "silly"
 }
