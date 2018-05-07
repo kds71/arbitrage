@@ -21,7 +21,7 @@ module.exports = class Controller {
             config: path.join(dir.root, dir.config)
         };
 
-        this.appManager = new AppManager(config.app, this.directories);
+        this.appManager = new AppManager(config.applications, this.directories);
 
     }
 
