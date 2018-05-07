@@ -41,6 +41,9 @@
     "WS_ERROR_HANDSHAKE_REPEAT": "handshake-repeat",
     "WS_ERROR_UNKNOWN_CLIENT": "unknown-client",
     "WS_INFO_HANDSHAKE": "handshake",
+    "WS_REQUEST_LOGIN": "login",
+    "WS_INFO_LOGIN_SUCCESS": "login-success",
+    "WS_INFO_LOGIN_FAILED": "login-failed",
 
     "INFO_HANDSHAKE": "handshake",
     "INFO_UPDATE_CONFIG": "update-config",
@@ -57,3 +60,4 @@
     "LOG_LEVEL_VERBOSE": "verbose",
     "LOG_LEVEL_SILLY": "silly"
 }
+
