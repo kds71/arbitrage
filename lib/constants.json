@@ -17,11 +17,17 @@
     "EVENT_APPLICATION_STDERR": "event-application-stderr",
     "EVENT_APPLICATION_MESSAGE": "event-application-message",
 
+    "LOG_MESSAGE_APPLICATION_STARTED": "application-started",
+    "LOG_MESSAGE_APPLICATION_STOPPED": "application-stopped",
+    "LOG_MESSAGE_APPLICATION_ERROR": "application-error",
     "LOG_MESSAGE_APPLICATION_STARTUP_FAILED": "application-startup-failed",
     "LOG_MESSAGE_APPLICATION_CONTROLLER_STOPPED_BY_USER": "application-controller-stopped-by-user",
+    "LOG_MESSAGE_APPLICATION_STOP_REQUESTED_BY_CONTROLLER": "application-stop-requested-by-controller", 
+    "LOG_MESSAGE_APPLICATION_STDERR": "application-stderr",
 
     "INFO_HANDSHAKE": "handshake",
     "INFO_UPDATE_CONFIG": "update-config",
+    "INFO_APPLICATION_STARTED": "application-started",
 
     "REQUEST_APPLICATION_STARTED": "application-started",
     "REQUEST_APPLICATION_STOP": "application-stop",
