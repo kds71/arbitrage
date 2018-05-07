@@ -10,6 +10,17 @@
     "APPLICATION_CONNECTION_HANDSHAKE": "application-connection-handshake",
     "APPLICATION_CONNECTION_READY": "application-connection-ready",
 
+    "EVENT_APPLICATION_CLOSED": "event-application-closed",
+    "EVENT_APPLICATION_STARTED": "event-application-started",
+    "EVENT_APPLICATION_ERROR": "event-application-error",
+    "EVENT_APPLICATION_STDOUT": "event-application-stdout",
+    "EVENT_APPLICATION_STDERR": "event-application-stderr",
+    "EVENT_APPLICATION_MESSAGE": "event-application-message",
+
+    "LOG_MESSAGE_APPLICATION_STARTUP_FAILED": "application-startup-failed",
+
+    "MESSAGE_HANDSHAKE": "message-handshake",
+
     "LOG_LEVEL_FATAL": "fatal",
     "LOG_LEVEL_ERROR": "error",
     "LOG_LEVEL_WARN": "warn",
