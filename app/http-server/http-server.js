@@ -22,15 +22,31 @@ module.exports = class HTTPServer extends Application {
     start() {
 
         this.expressApp = express();
+
         this.expressApp.use(express.static(this.config.directories.www, {
             index: 'index.htm',
             redirect: false
         }));
+
         this.websocket = expressWebsocket(this.expressApp);
         this.expressApp.ws('/websocket', function(socket) {
             socket.on('message', this.websocketMessageHandler.bind(this, socket));
             socket.on('close', this.websocketCloseHandler.bind(this, socket));
         }.bind(this));
+
+        this.expressApp.use('/constants', function(req, res) {
+
+            var content = JSON.stringify(C),
+                size = Buffer.byteLength(content, 'utf8');
+
+            res.set({
+                'Content-Length': size,
+                'Content-Type': C.MIME_JSON
+            });
+
+            res.end(JSON.stringify(C));
+
+        });
 
         this.expressApp.listen(this.config.port);
 

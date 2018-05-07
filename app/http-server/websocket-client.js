@@ -17,7 +17,7 @@ module.exports = class WebsocketClient {
 
         return {
             id: this.id,
-            addr: this.socket._socket.remoteAddr,
+            addr: this.socket.remoteAddr,
             name: this.login
         }
 

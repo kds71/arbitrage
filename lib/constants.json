@@ -17,6 +17,8 @@
     "EVENT_APPLICATION_STDERR": "event-application-stderr",
     "EVENT_APPLICATION_MESSAGE": "event-application-message",
 
+    "MIME_JSON": "application/json",
+
     "LOG_MESSAGE_APPLICATION_STARTED": "application-started",
     "LOG_MESSAGE_APPLICATION_STOPPED": "application-stopped",
     "LOG_MESSAGE_APPLICATION_ERROR": "application-error",
